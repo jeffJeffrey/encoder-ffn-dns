@@ -72,8 +72,9 @@ QUICK_TEST = os.environ.get("QUICK_TEST", "0") == "1"
 # ---------------------------------------------------------------------------
 # Datasets
 # ---------------------------------------------------------------------------
-MARQUES_URL  = "https://raw.githubusercontent.com/vanilink/DNS-Poisoning-Detection/main/marques_dns_dataset.csv"
-MARQUES_PATH = DATA_DIR / "marques_dns_dataset.csv"
+# APRÈS
+MARQUES_FILENAME = "marques_dns_dataset.csv"
+MARQUES_PATH     = PROJECT_ROOT / "datasets" / MARQUES_FILENAME
 
 BCCC_KAGGLE_SLUG = "bcccdatasets/malicious-dns-and-attacks-bccc-cic-bell-dns-2024"
 BCCC_DIR         = DATA_DIR / "bccc_dns"

@@ -39,22 +39,20 @@ _LEAKAGE_LC = {
 # Marques et al.
 # ---------------------------------------------------------------------------
 
-def get_marques(force: bool = False) -> pd.DataFrame:
-    """Download (or load from cache) the Marques et al. DNS dataset."""
-    path = config.MARQUES_PATH
-    if not path.exists() or force:
-        print("Downloading Marques et al. dataset…")
-        import requests
-        r = requests.get(config.MARQUES_URL, stream=True, timeout=60)
-        r.raise_for_status()
-        path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "wb") as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
-        print(f"  Saved → {path}")
-    else:
-        print(f"Marques dataset found in cache: {path}")
+def get_marques() -> pd.DataFrame:
+    """Load the Marques et al. DNS dataset from the local datasets/ folder.
 
+    The file datasets/marques_dns_dataset.csv must be present in the repository.
+    No download is performed — the file is committed directly to the repo.
+    """
+    path = config.MARQUES_PATH
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Marques dataset not found at {path}.\n"
+            f"Make sure 'marques_dns_dataset.csv' is in the 'datasets/' folder "
+            f"at the root of the repository."
+        )
+    print(f"Loading Marques dataset from {path} ...")
     df = pd.read_csv(path)
     print(f"  Shape: {df.shape}  |  label dist: {df['Class'].value_counts().to_dict()}")
     return df

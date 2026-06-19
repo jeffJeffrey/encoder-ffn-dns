@@ -1,8 +1,4 @@
-"""Shared utilities: figure saving (PDF + PNG), JSON I/O, latency measurement.
-
-All plots in this project go through `save_fig` so they are consistently
-exported as PDF (vector, for the paper) and PNG (quick preview).
-"""
+"""Shared utilities: figure saving (PDF+PNG), JSON I/O, latency measurement."""
 from __future__ import annotations
 
 import json
@@ -39,9 +35,6 @@ def save_fig(fig: Figure, out_dir: Path, name: str, dpi: int = 200) -> Path:
 
     PDF is the primary output (vector quality for the paper).
     PNG is kept for quick visual inspection.
-    The figure is also shown inline when running in a Jupyter/Colab notebook.
-
-    Returns the PDF path.
     """
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -65,7 +58,6 @@ def save_fig(fig: Figure, out_dir: Path, name: str, dpi: int = 200) -> Path:
 
 
 def save_json(obj: dict, path: Path) -> None:
-    """Persist *obj* as pretty-printed JSON at *path*."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w") as f:
@@ -84,14 +76,34 @@ def count_params(model) -> dict:
             "total": trainable + non_trainable}
 
 
-def measure_latency(model, input_shape, n_runs: int = 100, warmup: int = 10) -> dict:
-    """Measure average single-sample inference latency (ms) on CPU/GPU."""
+def measure_latency(model, data: dict, n_runs: int = 100, warmup: int = 10) -> dict:
+    """Measure average single-sample inference latency (ms).
+
+    Args:
+        model: compiled Keras model with inputs [seq, num].
+        data:  pipeline dict containing X_te_seq and X_te_num.
+        n_runs: number of timed calls.
+        warmup: number of warm-up calls before timing.
+
+    Returns:
+        dict with latency_ms and n_runs.
+    """
     import tensorflow as tf
-    x = tf.random.normal([1, *input_shape])
+
+    # Build single-sample inputs from the actual test data (index 0)
+    seq_sample = tf.constant(data["X_te_seq"][:1], dtype=tf.int32)   # shape (1, seq_len)
+    num_sample = tf.constant(data["X_te_num"][:1], dtype=tf.float32) # shape (1, n_num)
+
+    inputs = [seq_sample, num_sample]
+
     for _ in range(warmup):
-        model(x, training=False)
+        model(inputs, training=False)
+
     start = time.perf_counter()
     for _ in range(n_runs):
-        model(x, training=False)
+        model(inputs, training=False)
     elapsed = (time.perf_counter() - start) / n_runs
-    return {"latency_ms": round(elapsed * 1000.0, 4), "n_runs": n_runs}
+
+    result = {"latency_ms": round(elapsed * 1000.0, 4), "n_runs": n_runs}
+    print(f"Inference latency: {result['latency_ms']:.4f} ms/packet  ({n_runs} runs)")
+    return result

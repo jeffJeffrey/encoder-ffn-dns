@@ -40,22 +40,31 @@ _LEAKAGE_LC = {
 # ---------------------------------------------------------------------------
 
 def get_marques() -> pd.DataFrame:
-    """Load the Marques et al. DNS dataset from the local datasets/ folder.
-
-    The file datasets/marques_dns_dataset.csv must be present in the repository.
-    No download is performed — the file is committed directly to the repo.
-    """
+    """Load the Marques et al. DNS dataset from the local datasets/ folder."""
     path = config.MARQUES_PATH
     if not path.exists():
         raise FileNotFoundError(
-            f"Marques dataset not found at {path}.\n"
-            f"Make sure 'marques_dns_dataset.csv' is in the 'datasets/' folder "
-            f"at the root of the repository."
+            f"Marques dataset not found at: {path}\n"
+            f"Make sure 'marques_dns_dataset.csv' is inside the 'datasets/' folder "
+            f"at the root of the repository and has been committed to git."
         )
+
     print(f"Loading Marques dataset from {path} ...")
     df = pd.read_csv(path)
-    print(f"  Shape: {df.shape}  |  label dist: {df['Class'].value_counts().to_dict()}")
-    return df
+    print(f"  Shape: {df.shape}")
+
+    # Détecter la colonne label sans supposer son nom exact
+    label_col = next(
+        (c for c in df.columns if c.strip().lower() in ('class', 'label', 'target')),
+        None
+    )
+    if label_col:
+        print(f"  Label: '{label_col}' → {df[label_col].value_counts().to_dict()}")
+    else:
+        print(f"  [WARNING] Aucune colonne label trouvée: {list(df.columns)}")
+
+    return df   # ← retourne le DataFrame brut, 'Class' reste 'Class'
+                #   le rename vers TARGET_COL se fait dans preprocessing.py
 
 
 # ---------------------------------------------------------------------------

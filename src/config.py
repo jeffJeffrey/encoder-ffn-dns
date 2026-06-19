@@ -25,20 +25,15 @@ IS_COLAB = is_colab()
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if IS_COLAB:
-    PROJECT_ROOT = Path(os.environ.get(
-        "PROJECT_ROOT",
-        "/content/encoder_ffn_dns"
-    ))
+    PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", "/content/encoder-ffn-dns"))
     if not PROJECT_ROOT.exists():
         PROJECT_ROOT = Path.cwd()
 
-# ---------------------------------------------------------------------------
-# Directory layout
-# ---------------------------------------------------------------------------
 DATA_DIR    = PROJECT_ROOT / "data"
 FIGURES_DIR = PROJECT_ROOT / "figures"
 RESULTS_DIR = PROJECT_ROOT / "results"
 MODELS_DIR  = PROJECT_ROOT / "models"
+
 
 # Sub-directories per dataset
 for _ds in ("marques", "bccc"):
